@@ -1,6 +1,5 @@
 workflow:
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
     - if: '$CI_COMMIT_TAG'
 
@@ -10,53 +9,45 @@ include:
   - project: netcraft/development/ci-templates
     ref: master
     file: build-k8s.yaml
-  - project: netcraft/development/ci-templates
-    file: go.yaml
 
 stages:
-  - lint
-  - build
-  - test
+  - deploy
 
-lint:go:
-  extends: .go_lint
-  needs: []
-  tags:
-    - spot
-  rules:
-    - changes:
-        - "./**/*.go"
-      when: always
-  stage: lint
-  artifacts:
-    when: always
-    paths:
-      - api/linter_output.xml
-    reports:
-      junit: api/linter_output.xml
+ctr:prod:keda:
+   stage: deploy
+   when: manual
+   variables:
+     REPO: harbor.netcraft.com/netcraft/kedacore/keda
+     EXTRA_BUILDKIT_ARGS: --opt platform=linux/amd64,linux/arm64
+     DOCKER_FILE: Dockerfile
+   extends:
+     - .build_container
+   rules:
+     - changes:
+         - "**/*.go"
 
-ctr:test:keda:
-  stage: build
-  needs:
-    - lint:go
-  rules:
-    - changes:
-        - "./**/*.go"
-      when: always
-  variables:
-    CI_IMAGE_SUFFIX: keda-dev
-    EXTRA_BUILDKIT_ARGS: --opt platform=linux/amd64,linux/arm64
-    DOCKER_FILE: Dockerfile
-  extends:
-    - .build_container
+ctr:prod:keda-metrics-apiserver:
+   stage: deploy
+   when: manual
+   variables:
+     REPO: harbor.netcraft.com/netcraft/kedacore/keda-metrics-apiserver
+     EXTRA_BUILDKIT_ARGS: --opt platform=linux/amd64,linux/arm64
+     DOCKER_FILE: Dockerfile.adapter
+   extends:
+     - .build_container
+   rules:
+     - changes:
+         - "**/*.go"
 
-test:keda:
-  stage: test
-  image: ${CI_REGISTRY_IMAGE}/keda:${CI_COMMIT_SHORT_SHA}
-  extends: .go_test_with_coverage
-  needs:
-    - ctr:test:keda
-  rules:
-    - changes:
-        - "./**/*.go"
-      when: always
+ctr:prod:keda-admission-webhooks:
+   stage: deploy
+   when: manual
+   variables:
+     REPO: harbor.netcraft.com/netcraft/kedacore/keda-admission-webhooks
+     EXTRA_BUILDKIT_ARGS: --opt platform=linux/amd64,linux/arm64
+     DOCKER_FILE: Dockerfile.webhooks
+   extends:
+     - .build_container
+   rules:
+     - changes:
+         - "**/*.go"
