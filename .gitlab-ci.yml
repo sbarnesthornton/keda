@@ -20,6 +20,8 @@ ctr:prod:keda:
      REPO: harbor.netcraft.com/netcraft/kedacore/keda
      EXTRA_BUILDKIT_ARGS: --opt platform=linux/amd64,linux/arm64
      DOCKER_FILE: Dockerfile
+   before_script:
+     - echo "$HARBOR_REGISTRY_TOKEN" | docker login harbor.netcraft.com --username $HARBOR_REGISTRY_USER --password-stdin
    extends:
      - .build_container
    rules:
@@ -33,6 +35,8 @@ ctr:prod:keda-metrics-apiserver:
      REPO: harbor.netcraft.com/netcraft/kedacore/keda-metrics-apiserver
      EXTRA_BUILDKIT_ARGS: --opt platform=linux/amd64,linux/arm64
      DOCKER_FILE: Dockerfile.adapter
+   before_script:
+     - echo "$HARBOR_REGISTRY_TOKEN" | docker login harbor.netcraft.com --username $HARBOR_REGISTRY_USER --password-stdin
    extends:
      - .build_container
    rules:
@@ -46,6 +50,8 @@ ctr:prod:keda-admission-webhooks:
      REPO: harbor.netcraft.com/netcraft/kedacore/keda-admission-webhooks
      EXTRA_BUILDKIT_ARGS: --opt platform=linux/amd64,linux/arm64
      DOCKER_FILE: Dockerfile.webhooks
+   before_script:
+     - echo "$HARBOR_REGISTRY_TOKEN" | docker login harbor.netcraft.com --username $HARBOR_REGISTRY_USER --password-stdin
    extends:
      - .build_container
    rules:
