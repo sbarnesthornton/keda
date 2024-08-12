@@ -152,6 +152,8 @@ func buildScaler(ctx context.Context, client client.Client, triggerType string, 
 		return scalers.NewAzureQueueScaler(config)
 	case "azure-servicebus":
 		return scalers.NewAzureServiceBusScaler(ctx, config)
+	case "beanstalkd":
+		return scalers.NewBeanstalkdScaler(config)
 	case "cassandra":
 		return scalers.NewCassandraScaler(config)
 	case "couchdb":
@@ -229,8 +231,6 @@ func buildScaler(ctx context.Context, client client.Client, triggerType string, 
 		return scalers.NewPulsarScaler(config)
 	case "rabbitmq":
 		return scalers.NewRabbitMQScaler(config)
-	case "beanstalkd":
-		return scalers.NewBeanstalkdScaler(config)
 	case "redis":
 		return scalers.NewRedisScaler(ctx, false, false, config)
 	case "redis-cluster":
